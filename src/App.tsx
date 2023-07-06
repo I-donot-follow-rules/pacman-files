@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES, useEffect, useRef, useState } from 'react';
 import './App.css';
 
 function useInterval(ms: number, callback: (diff: number) => void) {
@@ -37,7 +37,6 @@ function getRotation (direction: Direction): number {
   }
 }
 
-
 function Pacman (props: PacmanProps) {
   const { direction, radius: r, x: cx, y: cy } = props
   const rotation = getRotation(direction)
@@ -59,6 +58,7 @@ function Pacman (props: PacmanProps) {
   )
 }
 
+// 28 columns x 31 rows = 868 tiles
 const level = [
   "╔════════════╕╒════════════╗",
   "║············││············║",
@@ -74,7 +74,7 @@ const level = [
   "     ║·││          ││·║     ",
   "     ║·││ ╔══──══╗ ││·║     ",
   "═════╝·╰╯ ║      ║ ╰╯·╚═════",
-       " ·   ║      ║   ·      ",
+  "      ·   ║      ║   ·      ",
   "═════╗·╭╮ ║      ║ ╭╮·╔═════",
   "     ║·││ ╚══════╝ ││·║     ",
   "     ║·││  READY!  ││·║     ",
@@ -93,6 +93,123 @@ const level = [
   "╚══════════════════════════╝",
 ];
 
+interface TileProps {
+  glyph: string;
+  length: number;
+  x: number;
+  y: number;
+}
+
+function Tile (props: TileProps) {
+  const { glyph, length, x, y } = props;
+
+  switch (glyph) {
+    case "╔":
+      return null;
+    case "═":
+      return null;
+    case "╕":
+      return null;
+    case "╒":
+      return null;
+    case "╗":
+      return null;
+    case "║":
+      return null;
+    case "·":
+      return (
+        <circle 
+          cx={x + length / 2} 
+          cy={y + length / 2} 
+          r={length * 0.1} 
+        />
+      );
+    case "│":
+      console.log(`Vertical line at ${x} and ${y}`);
+      return (
+        <line
+          x1={x + length / 2}
+          y1={y}
+          x2={x + length / 2}
+          y2={y + length}
+          strokeWidth={length * 0.1}
+          stroke="black"
+        />
+      );
+    case "╭":
+      return null;
+    case "─":
+      return null;
+    case "╮":
+      return null;
+    case "●":
+      return (
+        <circle 
+          cx={x + length / 2} 
+          cy={y + length / 2} 
+          r={length * 0.3} 
+        />
+      );
+    case "╰":
+      return null;
+    case "╯":
+      return null;
+    case "╚":
+      return null;
+    case "╝":
+      return null;
+    case "R":
+      return null;
+    case "E":
+      return null;
+    case "A":
+      return null;
+    case "D":
+      return null;
+    case "Y":
+      return null;
+    case "!":
+      return null;
+    case "╙":
+      return null;
+    case "╜":
+      return null;
+    case "╓":
+      return null;
+    case "╖":
+      return null;
+    case " ":
+      return null;
+    default:
+      throw new Error(`Unrecognized glyph: ${JSON.stringify(glyph)}`);
+  }
+}
+
+interface LevelProps {
+  level: string[];
+  length: number;
+}
+
+function Level(props: LevelProps) {
+  const { level, length } = props
+
+  return (
+    <>
+      {level.flatMap(function (line, lineNumber) {
+        return Array.from(line, function (glyph, columnNumber) {
+          return (
+            <Tile 
+              glyph={glyph} 
+              length={length} 
+              x={columnNumber * length} 
+              y={lineNumber * length} 
+            />
+          )
+        })
+      } )}
+    </>
+  )
+}
 
 function App() {
   const [up, setUp] = useState(false)
@@ -165,11 +282,14 @@ function App() {
     >
       <svg 
         id="pacman"
-        viewBox="0 0 500 500" 
+        viewBox="0 0 560 620"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
       >
-        <Pacman direction={direction} radius={20} x={X} y={Y}/>
+
+        <Level level={level} length={20} />
+              
+        <Pacman direction={direction} radius={12.5} x={X} y={Y}/>
       </svg>
     </div>
   )
