@@ -1,4 +1,4 @@
-import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 
 function useInterval(ms: number, callback: (diff: number) => void) {
@@ -83,7 +83,7 @@ const level = [
   "║············││············║",
   "║·╭──╮·╭───╮·││·╭───╮·╭──╮·║",
   "║·╰─╮│·╰───╯·╰╯·╰───╯·│╭─╯·║",
-  "║●··││·······  ·······││··●║",
+  "║●··││·······()·······││··●║",
   "╙─╮·││·╭╮·╭──────╮·╭╮·││·╭─╜",
   "╓─╯·╰╯·││·╰──╮╭──╯·││·╰╯·╰─╖",
   "║······││····││····││······║",
@@ -105,17 +105,63 @@ function Tile (props: TileProps) {
 
   switch (glyph) {
     case "╔":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "═":
-      return null;
+      return (
+        <line
+          x1={x}
+          y1={y + length / 2}
+          x2={x + length}
+          y2={y + length / 2}
+          strokeWidth={length * 0.1}
+          stroke="black"
+        />
+      );
     case "╕":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╒":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╗":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "║":
-      return null;
+      return (
+        <line
+          x1={x + length / 2}
+          y1={y}
+          x2={x + length / 2}
+          y2={y + length}
+          strokeWidth={length * 0.1}
+          stroke="black"
+        />
+      );
     case "·":
       return (
         <circle 
@@ -125,7 +171,6 @@ function Tile (props: TileProps) {
         />
       );
     case "│":
-      console.log(`Vertical line at ${x} and ${y}`);
       return (
         <line
           x1={x + length / 2}
@@ -137,11 +182,34 @@ function Tile (props: TileProps) {
         />
       );
     case "╭":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "─":
-      return null;
+      return (
+        <line
+          x1={x}
+          y1={y + length / 2}
+          x2={x + length}
+          y2={y + length / 2}
+          strokeWidth={length * 0.1}
+          stroke="black"
+        />
+      );
     case "╮":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "●":
       return (
         <circle 
@@ -151,34 +219,94 @@ function Tile (props: TileProps) {
         />
       );
     case "╰":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╯":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╚":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╝":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "R":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>R</text>;
     case "E":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>E</text>;
     case "A":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>A</text>;
     case "D":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>D</text>;
     case "Y":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>Y</text>;
     case "!":
-      return null;
+      return <text x={x + length / 2} y={y + length / 2} textLength={length}>!</text>;
     case "╙":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╜":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╓":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x + length} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case "╖":
-      return null;
+      return (
+        <path 
+          d={`M ${x + length / 2} ${y + length} Q ${x + length / 2} ${y + length / 2} ${x} ${y + length / 2}`}
+          strokeWidth={length * 0.1}
+          stroke="black"
+          fill="transparent"
+        />
+      );
     case " ":
+      return null;
+    case "(":
+      return null;
+    case ")":
       return null;
     default:
       throw new Error(`Unrecognized glyph: ${JSON.stringify(glyph)}`);
@@ -220,7 +348,7 @@ function App() {
   const [Y, setY] = useState(180)
   const [direction, setDirection] = useState<Direction>("Up")
   
-  useInterval(1000/50, function() {
+  useInterval(1000/10, function() {
     if (up) {
       setDirection("Up")
       setY((y) => y-10)
