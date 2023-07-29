@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
+import { type } from 'os';
 
 function useInterval(ms: number, callback: (diff: number) => void) {
   const callbackRef = useRef(callback)
@@ -74,7 +75,7 @@ const level = [
   "     ║·││          ││·║     ",
   "     ║·││ ╔══──══╗ ││·║     ",
   "═════╝·╰╯ ║      ║ ╰╯·╚═════",
-  "      ·   ║      ║   ·      ",
+  "}     ·   ║      ║   ·     {",
   "═════╗·╭╮ ║      ║ ╭╮·╔═════",
   "     ║·││ ╚══════╝ ││·║     ",
   "     ║·││  READY!  ││·║     ",
@@ -92,6 +93,166 @@ const level = [
   "║··························║",
   "╚══════════════════════════╝",
 ];
+
+interface Node {
+  x: number;
+  y: number;
+  up?: Node;
+  down?: Node;
+  left?: Node;
+  right?: Node;
+}
+
+function szudzik(x: number, y: number) {
+  return x < y ? x + y * y : x + x * x + y 
+}
+
+const movableGlyphs = "·●READY! (){}"
+
+function buildGraph(start: Node, level: string[]) {
+  const memo = new Map<number, Node>()
+  const stack: Node[] = [start]
+  const { x, y } = start
+  memo.set(szudzik(x, y), start)
+
+  while (stack.length > 0) {
+    const node = stack.pop()!
+    const { x, y } = node
+    const neighbors: [Direction, [number, number]][] = [
+      ["Up", [x, y - 1]],
+      ["Left", [x - 1, y]],
+      ["Right", [x + 1, y]],
+      ["Down", [x, y + 1]]
+    ];
+    for (const [direction, [x, y]] of neighbors) {
+      if (
+        y >= 0 &&
+        y < level.length &&
+        x >= 0 &&
+        x < level[y].length &&
+        movableGlyphs.includes(level[y - 1][x - 1])
+      ) {
+        const pair = szudzik(x, y)
+        const neighbor = memo.get(pair) ?? { x, y }
+        memo.set(pair, neighbor)
+
+        switch (direction) {
+          case "Up": {
+            if (node.up === undefined) {
+              const inBetween: Node = { x, y: y + 0.5 }
+              node.up = inBetween
+              inBetween.down = node
+              inBetween.up = neighbor
+              neighbor.down = inBetween
+              stack.push(neighbor)
+            }
+            break
+          }
+          case "Down": {
+            if (node.down === undefined) {
+              const inBetween: Node = { x, y: y - 0.5 }
+              node.down = inBetween
+              inBetween.up = node
+              inBetween.down = neighbor
+              neighbor.up = inBetween
+              stack.push(neighbor)
+            }
+            break
+          }
+          case "Left": {
+            if (node.left === undefined) {
+              const inBetween: Node = { x: x + 0.5, y}
+              node.left = inBetween
+              inBetween.right = node
+              inBetween.left = neighbor
+              neighbor.right = inBetween
+              stack.push(neighbor)
+            }
+            break
+          }
+          case "Right": {
+            if (node.right === undefined) {
+              const inBetween: Node = { x: x - 0.5, y}
+              node.right = inBetween
+              inBetween.left = node
+              inBetween.right = neighbor
+              neighbor.left = inBetween
+              stack.push(neighbor)
+            }
+            break
+          }
+        }
+      }
+    }
+  }
+
+  const node = memo.get(szudzik(x, y))!
+  return node.right
+}
+
+console.log(buildGraph(getStartNode(level), level))
+
+function getStartNode(level: string[]): Node {
+  type State = 
+    | { status: "not-seen" }
+    | { status: "saw-open"; x: number; y: number }
+    | { status: "saw-both"; x: number; y: number }
+
+  let state: State = { status: "not-seen" }
+  let row = 0
+  for (const line of level) {
+    row = row + 1
+    let column = 0
+    for (const glyph of line) {
+      column = column + 1
+      switch (state.status) {
+        case "not-seen": {
+          switch (glyph) {
+            case "(": {
+              state = { status: "saw-open", x: column, y: row }
+              break
+            }
+            case ")": {
+              throw new Error("Expected `(` but saw `)`.")
+            }
+          }
+          break
+        }
+        case "saw-open": {
+          switch (glyph) {
+            case ")": {
+              state = { status: "saw-both", x: state.x, y: state.y }
+              break
+            }
+            default: {
+              throw new Error(`Expected \`)\` but saw \`${glyph}\``)
+            }
+          }
+          break
+        }
+        case "saw-both": {
+          switch (glyph) {
+            case "(":
+            case ")": {
+              throw new Error("Expected any glyph except `(` and `)`.")
+            }
+          }
+          break
+        }
+      }
+    }
+  }
+
+  switch (state.status) {
+    case "not-seen": 
+    case "saw-open": {
+      throw new Error("Expected to see `()`.")
+    }
+    case "saw-both": {
+      return { x: state.x, y: state.y }
+    }
+  }
+}
 
 interface TileProps {
   glyph: string;
@@ -308,6 +469,10 @@ function Tile (props: TileProps) {
       return null;
     case ")":
       return null;
+    case "{":
+      return null;
+    case "}":
+      return null;
     default:
       throw new Error(`Unrecognized glyph: ${JSON.stringify(glyph)}`);
   }
@@ -348,7 +513,7 @@ function App() {
   const [Y, setY] = useState(180)
   const [direction, setDirection] = useState<Direction>("Up")
   
-  useInterval(1000/10, function() {
+  useInterval(1000/30, function() {
     if (up) {
       setDirection("Up")
       setY((y) => y-10)
