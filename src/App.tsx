@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { type } from 'os';
+import { createEmitAndSemanticDiagnosticsBuilderProgram } from 'typescript';
+
+function assert(condition: boolean, message: string): asserts condition {
+  if (!condition) throw new Error(message)
+} 
 
 function useInterval(ms: number, callback: (diff: number) => void) {
   const callbackRef = useRef(callback)
@@ -20,7 +24,8 @@ function useInterval(ms: number, callback: (diff: number) => void) {
   }, [ms])
 }
 
-type Direction = "Up" | "Down" | "Left" | "Right"
+
+type Direction = "up" | "down" | "left" | "right"
 
 interface PacmanProps {
   direction: Direction;
@@ -31,10 +36,10 @@ interface PacmanProps {
 
 function getRotation (direction: Direction): number {
   switch (direction) {
-    case "Up": return 270
-    case "Left": return 180
-    case "Down": return 90
-    case "Right": return 0
+    case "up": return 270
+    case "left": return 180
+    case "down": return 90
+    case "right": return 0
   }
 }
 
@@ -109,7 +114,7 @@ function szudzik(x: number, y: number) {
 
 const movableGlyphs = "·●READY! (){}"
 
-function buildGraph(start: Node, level: string[]) {
+function buildGraph(start: Node, level: string[]): Node {
   const memo = new Map<number, Node>()
   const stack: Node[] = [start]
   const { x, y } = start
@@ -119,10 +124,10 @@ function buildGraph(start: Node, level: string[]) {
     const node = stack.pop()!
     const { x, y } = node
     const neighbors: [Direction, [number, number]][] = [
-      ["Up", [x, y - 1]],
-      ["Left", [x - 1, y]],
-      ["Right", [x + 1, y]],
-      ["Down", [x, y + 1]]
+      ["up", [x, y - 1]],
+      ["left", [x - 1, y]],
+      ["right", [x + 1, y]],
+      ["down", [x, y + 1]]
     ];
     for (const [direction, [x, y]] of neighbors) {
       if (
@@ -137,7 +142,7 @@ function buildGraph(start: Node, level: string[]) {
         memo.set(pair, neighbor)
 
         switch (direction) {
-          case "Up": {
+          case "up": {
             if (node.up === undefined) {
               const inBetween: Node = { x, y: y + 0.5 }
               node.up = inBetween
@@ -148,7 +153,7 @@ function buildGraph(start: Node, level: string[]) {
             }
             break
           }
-          case "Down": {
+          case "down": {
             if (node.down === undefined) {
               const inBetween: Node = { x, y: y - 0.5 }
               node.down = inBetween
@@ -159,7 +164,7 @@ function buildGraph(start: Node, level: string[]) {
             }
             break
           }
-          case "Left": {
+          case "left": {
             if (node.left === undefined) {
               const inBetween: Node = { x: x + 0.5, y}
               node.left = inBetween
@@ -170,7 +175,7 @@ function buildGraph(start: Node, level: string[]) {
             }
             break
           }
-          case "Right": {
+          case "right": {
             if (node.right === undefined) {
               const inBetween: Node = { x: x - 0.5, y}
               node.right = inBetween
@@ -187,10 +192,9 @@ function buildGraph(start: Node, level: string[]) {
   }
 
   const node = memo.get(szudzik(x, y))!
+  assert(node.right !== undefined, "expected node.right to be defined")
   return node.right
 }
-
-console.log(buildGraph(getStartNode(level), level))
 
 function getStartNode(level: string[]): Node {
   type State = 
@@ -259,10 +263,11 @@ interface TileProps {
   length: number;
   x: number;
   y: number;
+  started: boolean;
 }
 
 function Tile (props: TileProps) {
-  const { glyph, length, x, y } = props;
+  const { glyph, length, x, y, started } = props;
 
   switch (glyph) {
     case "╔":
@@ -416,17 +421,17 @@ function Tile (props: TileProps) {
         />
       );
     case "R":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>R</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>R</text>;
     case "E":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>E</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>E</text>;
     case "A":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>A</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>A</text>;
     case "D":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>D</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>D</text>;
     case "Y":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>Y</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>Y</text>;
     case "!":
-      return <text x={x + length / 2} y={y + length / 2} textLength={length}>!</text>;
+      return started ? null : <text x={x + length / 2} y={y + length / 2} textLength={length}>!</text>;
     case "╙":
       return (
         <path 
@@ -481,10 +486,11 @@ function Tile (props: TileProps) {
 interface LevelProps {
   level: string[];
   length: number;
+  started: boolean;
 }
 
 function Level(props: LevelProps) {
-  const { level, length } = props
+  const { level, length, started } = props
 
   return (
     <>
@@ -495,7 +501,8 @@ function Level(props: LevelProps) {
               glyph={glyph} 
               length={length} 
               x={columnNumber * length} 
-              y={lineNumber * length} 
+              y={lineNumber * length}
+              started={started}
             />
           )
         })
@@ -504,65 +511,120 @@ function Level(props: LevelProps) {
   )
 }
 
+function updateLevel(lineNumber: number, columnNumber: number, level: string[]) {
+  const newLevel: string[] = level.map((line, row) => {
+    if (row === lineNumber) {
+      return `${line.slice(0, columnNumber)} ${line.slice(columnNumber + 1)}`
+    } else {
+      return line
+    }
+  })
+  return newLevel
+}
+
+const initialNode = buildGraph(getStartNode(level), level)
+
+const food = "·●"
+
 function App() {
-  const [up, setUp] = useState(false)
-  const [down, setDown] = useState(false)
-  const [left, setLeft] = useState(false)
-  const [right, setRight] = useState(false)
-  const [X, setX] = useState(120)
-  const [Y, setY] = useState(180)
-  const [direction, setDirection] = useState<Direction>("Up")
+  const [currentLevel, setCurrentLevel] = useState(level)
+  const [node, setNode] = useState(initialNode)
+  const x = 20 * (node.x - 0.5)
+  const y = 20 * (node.y - 0.5)
+  const [direction, setDirection] = useState<Direction | undefined>()
+  const nextDirectionRef = useRef<Direction | undefined>()
+
+  function updateNode(newNode: Node) {
+    setNode(newNode)
+    const nextDirection = nextDirectionRef.current
+    if (nextDirection !== undefined && newNode[nextDirection] !== undefined) {
+      setDirection(nextDirection)
+      nextDirectionRef.current = undefined
+    }
+  }
   
-  useInterval(1000/30, function() {
-    if (up) {
-      setDirection("Up")
-      setY((y) => y-10)
-    }
-    if (down) {
-      setDirection("Down")
-      setY((y) => y+10)
-    }
-    if (left) {
-      setDirection("Left")
-      setX((x) => x-10)
-    }
-    if (right) {
-      setDirection("Right")
-      setX((x) => x+10)
+  useInterval(1000/15, function() {
+    switch (direction) {
+      case "up": {
+        if (node.up !== undefined) {
+          updateNode(node.up)
+          const x = Math.round(node.up.x) - 1
+          const y = Math.floor(node.up.y) - 1
+          if (food.includes(currentLevel[y][x])) {
+            const newLevel = updateLevel(y, x, currentLevel) 
+            setCurrentLevel(newLevel)
+          }
+        }
+        break
+      }
+      case "down": {
+        if (node.down !== undefined) {
+          updateNode(node.down)
+          const x = Math.round(node.down.x) - 1
+          const y = Math.ceil(node.down.y) - 1
+          if (food.includes(currentLevel[y][x])) {
+            const newLevel = updateLevel(y, x, currentLevel) 
+            setCurrentLevel(newLevel)
+          }
+        }
+        break
+      }
+      case "left": {
+        if (node.left !== undefined) {
+          updateNode(node.left)
+          const x = Math.floor(node.left.x) - 1
+          const y = Math.round(node.left.y) - 1
+          if (food.includes(currentLevel[y][x])) {
+            const newLevel = updateLevel(y, x, currentLevel) 
+            setCurrentLevel(newLevel)
+          }
+        }
+        break
+      }
+      case "right": {
+        if (node.right !== undefined) {
+          updateNode(node.right)
+          const x = Math.ceil(node.right.x) - 1
+          const y = Math.round(node.right.y) - 1
+          if (food.includes(currentLevel[y][x])) {
+            const newLevel = updateLevel(y, x, currentLevel) 
+            setCurrentLevel(newLevel)
+          }
+        }
+        break
+      }
     }
   })
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    
     switch (event.key) {
       case "ArrowUp":
-        setUp(true)
+        if (node.up !== undefined) {
+          setDirection("up")
+        } else {
+          nextDirectionRef.current = "up"
+        }
         break
       case "ArrowDown":
-        setDown(true)
+        if (node.down !== undefined) {
+          setDirection("down")
+        } else {
+          nextDirectionRef.current = "down"
+        }
         break
       case "ArrowLeft":
-        setLeft(true)
+        if (node.left !== undefined) {
+          setDirection("left")
+        } else {
+          nextDirectionRef.current = "left"
+        }
         break
       case "ArrowRight":
-        setRight(true)
-        break
-    }
-  }
-
-  function handleKeyUp(event: React.KeyboardEvent<HTMLDivElement>) {
-    switch (event.key) {
-      case "ArrowUp":
-        setUp(false)
-        break
-      case "ArrowDown":
-        setDown(false)
-        break
-      case "ArrowLeft":
-        setLeft(false)
-        break
-      case "ArrowRight":
-        setRight(false)
+        if (node.right !== undefined) {
+          setDirection("right")
+        } else {
+          nextDirectionRef.current = "right"
+        }
         break
     }
   }
@@ -571,7 +633,6 @@ function App() {
     <div
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
     >
       <svg 
         id="pacman"
@@ -580,9 +641,13 @@ function App() {
         version="1.1"
       >
 
-        <Level level={level} length={20} />
+        <Level
+          level={currentLevel}
+          length={20}
+          started={direction !== undefined}
+        />
               
-        <Pacman direction={direction} radius={12.5} x={X} y={Y}/>
+        <Pacman direction={direction ?? "left"} radius={12.5} x={x} y={y}/>
       </svg>
     </div>
   )
