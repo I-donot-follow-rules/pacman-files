@@ -610,13 +610,75 @@ function updateLevel(
   return newLevel;
 }
 
+function getStartNodeBlinky(level: string[]): Node {
+  const pattern = "═──═";
+  let lineNumber = 0;
+  for (const line of level) {
+    const columnNumber = line.indexOf(pattern);
+    if (columnNumber >= 0) {
+      const x = columnNumber + 2.5;
+      const y = lineNumber;
+      return { x, y };
+    }
+    lineNumber = lineNumber + 1;
+  }
+  throw new Error("Expected a ghost area");
+}
+
+function distance(start: Node, end: Node): number {
+  const x = start.x - end.x;
+  const y = start.y - end.y;
+  return Math.sqrt(x ** 2 + y ** 2);
+}
+
+function findNode(start: Node, end: Node): Node {
+  const openSet = [start];
+  const gScore = new WeakMap<Node, number>();
+  const fScore = new WeakMap<Node, number>();
+
+  gScore.set(start, 0);
+  fScore.set(start, distance(start, end));
+
+  while (openSet.length > 0) {
+    const current = openSet.shift();
+    assert(current !== undefined, "Expected currentNode to be defined");
+    if (current.x === end.x && current.y === end.y) {
+      return current;
+    }
+    const neighbors = [current.up, current.down, current.left, current.right];
+    for (const neighbor of neighbors) {
+      if (neighbor !== undefined) {
+        const score = gScore.get(current)! + 0.5;
+        const oldScore = gScore.get(neighbor) ?? Number.POSITIVE_INFINITY;
+        if (score < oldScore) {
+          gScore.set(neighbor, score);
+          fScore.set(neighbor, score + distance(neighbor, end));
+          if (!openSet.includes(neighbor)) {
+            openSet.push(neighbor);
+            openSet.sort((a, b) => {
+              return fScore.get(a)! - fScore.get(b)!;
+            });
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error("Expected to find the end node");
+}
+
 const initialNode = buildGraph(getStartNode(level), level);
+
+const initialNodeBlinky = findNode(initialNode, getStartNodeBlinky(level));
 
 const food = "·●";
 
 function App() {
   const [currentLevel, setCurrentLevel] = useState(level);
   const [node, setNode] = useState(initialNode);
+  const [blinkyNode, setBlinkyNode] = useState(initialNodeBlinky);
+  const blinkyX = 20 * (blinkyNode.x - 0.5) - 12.5;
+  const blinkyY = 20 * (blinkyNode.y - 0.5) - 12.5;
   const x = 20 * (node.x - 0.5);
   const y = 20 * (node.y - 0.5);
   const [direction, setDirection] = useState<Direction | undefined>();
@@ -739,6 +801,7 @@ function App() {
       />
 
       <Pacman direction={direction ?? "left"} radius={12.5} x={x} y={y} />
+      <image href="red-ghost.png" x={blinkyX} y={blinkyY} width={25} />
     </svg>
   );
 }
