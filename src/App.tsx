@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { createEmitAndSemanticDiagnosticsBuilderProgram } from "typescript";
 
 function assert(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
-
-function useInterval(ms: number, callback: (diff: number) => void) {
+function useTimeout(ms: number | null, callback: (diff: number) => void) {
   const callbackRef = useRef(callback);
   useEffect(
     function () {
@@ -17,6 +15,32 @@ function useInterval(ms: number, callback: (diff: number) => void) {
 
   useEffect(
     function () {
+      if (ms === null) return;
+      const start = Date.now();
+      const timeout = setTimeout(function () {
+        const end = Date.now();
+        callbackRef.current(end - start);
+      }, ms);
+      return function () {
+        clearTimeout(timeout);
+      };
+    },
+    [ms]
+  );
+}
+
+function useInterval(ms: number | null, callback: (diff: number) => void) {
+  const callbackRef = useRef(callback);
+  useEffect(
+    function () {
+      callbackRef.current = callback;
+    },
+    [callback]
+  );
+
+  useEffect(
+    function () {
+      if (ms === null) return;
       const start = Date.now();
       const interval = setInterval(function () {
         const end = Date.now();
@@ -316,7 +340,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x + length} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -328,7 +352,7 @@ function Tile(props: TileProps) {
           x2={x + length}
           y2={y + length / 2}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
         />
       );
     case "╕":
@@ -338,7 +362,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -349,7 +373,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x + length} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -360,7 +384,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -372,12 +396,17 @@ function Tile(props: TileProps) {
           x2={x + length / 2}
           y2={y + length}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
         />
       );
     case "·":
       return (
-        <circle cx={x + length / 2} cy={y + length / 2} r={length * 0.1} />
+        <circle
+          cx={x + length / 2}
+          cy={y + length / 2}
+          r={length * 0.1}
+          fill="white"
+        />
       );
     case "│":
       return (
@@ -387,7 +416,7 @@ function Tile(props: TileProps) {
           x2={x + length / 2}
           y2={y + length}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
         />
       );
     case "╭":
@@ -397,7 +426,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x + length} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -409,7 +438,7 @@ function Tile(props: TileProps) {
           x2={x + length}
           y2={y + length / 2}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
         />
       );
     case "╮":
@@ -419,13 +448,18 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
     case "●":
       return (
-        <circle cx={x + length / 2} cy={y + length / 2} r={length * 0.3} />
+        <circle
+          cx={x + length / 2}
+          cy={y + length / 2}
+          r={length * 0.3}
+          fill="white"
+        />
       );
     case "╰":
       return (
@@ -434,7 +468,7 @@ function Tile(props: TileProps) {
             x + length
           } ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -445,7 +479,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -456,7 +490,7 @@ function Tile(props: TileProps) {
             x + length
           } ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -467,7 +501,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -514,7 +548,7 @@ function Tile(props: TileProps) {
             x + length
           } ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -525,7 +559,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -536,7 +570,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x + length} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -547,7 +581,7 @@ function Tile(props: TileProps) {
             y + length / 2
           } ${x} ${y + length / 2}`}
           strokeWidth={length * 0.1}
-          stroke="black"
+          stroke="blue"
           fill="transparent"
         />
       );
@@ -670,8 +704,18 @@ function findNode(start: Node, end: Node): Node {
 const initialNode = buildGraph(getStartNode(level), level);
 
 const initialNodeBlinky = findNode(initialNode, getStartNodeBlinky(level));
+const topRightCorner = findNode(initialNodeBlinky, { x: 27, y: 2 });
 
 const food = "·●";
+
+type GhostState = "scatter" | "chase";
+
+const oppositeDirection: Record<Direction, Direction> = {
+  up: "down",
+  down: "up",
+  left: "right",
+  right: "left",
+};
 
 function App() {
   const [currentLevel, setCurrentLevel] = useState(level);
@@ -683,6 +727,44 @@ function App() {
   const y = 20 * (node.y - 0.5);
   const [direction, setDirection] = useState<Direction | undefined>();
   const nextDirectionRef = useRef<Direction | undefined>();
+  const [blinkyDirection, setBlinkyDirection] = useState<Direction>("left");
+  const [delay, setDelay] = useState<number | null>(1000 / 15);
+  const [blinkyState, setBlinkyState] = useState<GhostState>("scatter");
+
+  useTimeout(direction === undefined ? null : 7000, () => {
+    setBlinkyState("chase");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 27000, () => {
+    setBlinkyState("scatter");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 34000, () => {
+    setBlinkyState("chase");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 54000, () => {
+    setBlinkyState("scatter");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 59000, () => {
+    setBlinkyState("chase");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 79000, () => {
+    setBlinkyState("scatter");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
+
+  useTimeout(direction === undefined ? null : 84000, () => {
+    setBlinkyState("chase");
+    setBlinkyDirection(oppositeDirection[blinkyDirection]);
+  });
 
   function updateNode(newNode: Node) {
     setNode(newNode);
@@ -693,7 +775,67 @@ function App() {
     }
   }
 
-  useInterval(1000 / 15, function () {
+  function moveBlinkyTowardsNode(prevDirection: Direction, node: Node) {
+    const neighbors: [Direction, Node | undefined][] = [
+      ["up", blinkyNode.up],
+      ["down", blinkyNode.down],
+      ["left", blinkyNode.left],
+      ["right", blinkyNode.right],
+    ];
+    const possibleNeighbors = neighbors.filter(
+      (pair): pair is [Direction, Node] => {
+        const [direction, neighbor] = pair;
+        return neighbor !== undefined && direction !== prevDirection;
+      }
+    );
+    possibleNeighbors.sort(
+      ([, a], [, b]) => distance(node, a) - distance(node, b)
+    );
+    const [[nextDirection, nextNode]] = possibleNeighbors;
+    setBlinkyDirection(nextDirection);
+    setBlinkyNode(nextNode);
+  }
+
+  useInterval(delay, function () {
+    if (distance(node, blinkyNode) <= 1) {
+      setDelay(null);
+      return;
+    }
+    if (direction !== undefined) {
+      switch (blinkyDirection) {
+        case "up": {
+          moveBlinkyTowardsNode(
+            "down",
+            blinkyState === "scatter" ? topRightCorner : node
+          );
+          break;
+        }
+
+        case "down": {
+          moveBlinkyTowardsNode(
+            "up",
+            blinkyState === "scatter" ? topRightCorner : node
+          );
+          break;
+        }
+
+        case "left": {
+          moveBlinkyTowardsNode(
+            "right",
+            blinkyState === "scatter" ? topRightCorner : node
+          );
+          break;
+        }
+
+        case "right": {
+          moveBlinkyTowardsNode(
+            "left",
+            blinkyState === "scatter" ? topRightCorner : node
+          );
+          break;
+        }
+      }
+    }
     switch (direction) {
       case "up": {
         if (node.up !== undefined) {
